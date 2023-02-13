@@ -1,0 +1,19 @@
+<div class="content">
+  <span class="material-icons md-48" style="font-size: 200px !important;">admin_panel_settings</span>
+
+  <form class="form">
+    <mat-form-field class="full-width" appearance="outline">
+      <mat-label>Email</mat-label>
+      <input matInput [formControl]="email"
+             placeholder="Ex. email@email.com">
+      <mat-error *ngIf="email.hasError('email') && !email.hasError('required')">
+        Please enter a valid username or email address
+      </mat-error>
+      <mat-error *ngIf="email.hasError('required')">
+        Email is <strong>required</strong>
+      </mat-error>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" (click)="onSubmit();">Login</button>
+  </form>
+</div>

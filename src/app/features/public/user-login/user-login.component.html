@@ -1,0 +1,20 @@
+<div class="content">
+
+  <span class="material-icons md-48" style="font-size: 200px !important;">face</span>
+
+  <form class="form">
+    <mat-form-field class="full-width" appearance="outline">
+      <mat-label>Login</mat-label>
+      <input matInput [formControl]="login"
+             placeholder="Ex. username or email@email.com">
+      <mat-error *ngIf="login.hasError('login') && !login.hasError('required')">
+        Please enter a valid username or email address
+      </mat-error>
+      <mat-error *ngIf="login.hasError('required')">
+        Login is <strong>required</strong>
+      </mat-error>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" (click)="onSubmit();">Login</button>
+  </form>
+</div>
