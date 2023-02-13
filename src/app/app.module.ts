@@ -15,6 +15,7 @@ import { AdminService } from './services/admin.service';
 import { UserService } from './services/user.service';
 import { UserHomeComponent } from './features/private/user-home/user-home.component';
 import { AdminHomeComponent } from './features/private/admin-home/admin-home.component';
+import { ToolbarComponent } from './features/public/toolbar/toolbar.component';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,8 @@ import { AdminHomeComponent } from './features/private/admin-home/admin-home.com
     UserLoginComponent,
     AdminLoginComponent,
     UserHomeComponent,
-    AdminHomeComponent
+    AdminHomeComponent,
+    ToolbarComponent
   ],
   imports: [
     BrowserModule,

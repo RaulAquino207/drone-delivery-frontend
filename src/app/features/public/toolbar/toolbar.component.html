@@ -1,0 +1,15 @@
+<div class="toolbar" role="banner">
+  <div class="logo">
+    <img width="40" alt="Drone Logo" src="assets/icons/drone.svg" />
+    <span>Drone Delivery</span>
+  </div>
+  <button
+    *ngIf="!!token"
+    mat-mini-fab
+    color="warn"
+    class="left-button"
+    (click)="logout()"
+  >
+    <mat-icon>arrow_circle_left</mat-icon>
+  </button>
+</div>
