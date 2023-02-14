@@ -1,0 +1,22 @@
+.grid {
+	display: grid;
+}
+
+.grid-template-columns-2 {
+	grid-template-columns: 1fr 2fr;
+}
+
+.item {
+	justify-content: center;
+  display: flex;
+	text-align: center;
+	font-size: 1.5em;
+}
+
+.map {
+  display: flex;
+  margin-top: -70px;
+  margin-right: 30px;
+  overflow-y: auto;
+}
+

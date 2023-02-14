@@ -16,6 +16,7 @@ import { UserService } from './services/user.service';
 import { UserHomeComponent } from './features/private/user-home/user-home.component';
 import { AdminHomeComponent } from './features/private/admin-home/admin-home.component';
 import { ToolbarComponent } from './features/public/toolbar/toolbar.component';
+import { GoogleMapsModule } from '@angular/google-maps';
 
 @NgModule({
   declarations: [
@@ -24,7 +25,7 @@ import { ToolbarComponent } from './features/public/toolbar/toolbar.component';
     AdminLoginComponent,
     UserHomeComponent,
     AdminHomeComponent,
-    ToolbarComponent
+    ToolbarComponent,
   ],
   imports: [
     BrowserModule,
@@ -35,7 +36,8 @@ import { ToolbarComponent } from './features/public/toolbar/toolbar.component';
     HttpClientModule,
     MatNativeDateModule,
     ReactiveFormsModule,
-    MaterialExampleModule
+    MaterialExampleModule,
+    GoogleMapsModule
   ],
   providers: [
     UserService,
