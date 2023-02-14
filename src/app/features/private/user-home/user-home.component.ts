@@ -1,15 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { Socket } from 'ngx-socket-io';
 import { Observable } from 'rxjs';
 import { OrderService } from '../../../services/order.service';
 import { UserService } from '../../../services/user.service';
+import * as uuid from 'uuid';
 
 @Component({
   selector: 'app-user-home',
   templateUrl: './user-home.component.html',
   styleUrls: ['./user-home.component.css'],
 })
-export class UserHomeComponent implements OnInit {
+export class UserHomeComponent implements OnInit, OnDestroy {
   user: any;
   options: google.maps.MapOptions | undefined;
   map: any;
@@ -17,13 +19,45 @@ export class UserHomeComponent implements OnInit {
   constructor(
     private userService: UserService,
     private orderService: OrderService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private socket: Socket,
+  ) { }
+
+  ngOnDestroy(): void {
+    this.socket.disconnect();
+    this.socket.removeAllListeners();
+  }
 
   ngOnInit(): void {
     let token: string | null = window.localStorage.getItem('token');
     if (token) {
       this.bringLoggedInUserData(token);
+
+      // const id = window.localStorage.getItem('token');
+      this.orderService.getActiveSections(token!).subscribe((orders) => {
+        // console.log("🚀 ~ file: user-home.component.ts:94 ~ UserHomeComponent ~ this.orderService.getActiveSections ~ data", data)
+
+        // console.log(JSON.stringify(data))
+        if (JSON.stringify(orders) === "[]") {
+          console.log('n tem dado')
+        } else {
+          orders.map((order: any) => {
+            console.log('tem dado')
+            console.log(order)
+            this.socket.connect();
+            this.socket.on(order.section, (data: any) => {
+              console.log(data);
+            })
+          })
+        }
+        // data.map((order) => {
+        //   this.socket.connect();
+        //   this.socket.on( ,(data: any) => {
+        //       console.log(data);
+        //     })
+        // })
+
+      })
     } else {
       this.router.navigate(['/login-user']);
     }
@@ -62,69 +96,139 @@ export class UserHomeComponent implements OnInit {
           //   strokeColor: '#FF5733',
           // },
         });
-
-        // this.options = {
-        //   center: {lat: this.user.position.latitude, lng: this.user.position.longitude},
-        //   zoom: 17
-        // };
-
-        console.log(this.user);
       }
     });
   }
 
   makeOrder() {
-    const id = window.localStorage.getItem('token');
-    return this.orderService.makeOrder(id!).subscribe((data) => {
-      console.log(
-        '🚀 ~ file: user-home.component.ts:75 ~ UserHomeComponent ~ returnthis.orderService.makeOrder ~ data',
-        data
-      );
-      // console.log(data.warehouse.position.latitude, data.warehouse.position.longitude);
+    this.socket.connect();
+    const sectionId = uuid.v4();
+    console.log("🚀 ~ file: user-home.component.ts:115 ~ UserHomeComponent ~ makeOrder ~ sectionId", sectionId)
+    this.socket.connect();
+    const color = Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0').toUpperCase();
+    this.socket.on(sectionId, (data: any) => {
+      let drone: google.maps.Marker = new google.maps.Marker();
+      console.log(Array.isArray(data.message));
+      if (!Array.isArray(data.message) && data.message != true) {
+        const latLng = new google.maps.LatLng(
+          data.warehouse.position.latitude,
+          data.warehouse.position.longitude
+        );
+        new google.maps.Marker({
+          position: latLng,
+          map: this.map,
+          icon: {
+            path: 'M24 9.1 6.95 15.95v23.1h6.15V25.8q0-1.2.825-2.05.825-.85 2.025-.85H32.1q1.15 0 2 .85.85.85.85 2.05v13.25h6.15v-23.1Zm-8.05 32.8h-9q-1.2 0-2.025-.825T4.1 39.05V16q0-.9.475-1.625T5.9 13.3l17.05-6.8q.55-.25 1.075-.25.525 0 1.025.25l17.1 6.8q.8.35 1.3 1.075t.5 1.625v23.05q0 1.2-.85 2.025t-2 .825h-9V25.8H15.95Zm2.65 0v-2.85h2.85v2.85Zm4-6v-2.85h2.85v2.85Zm4 6v-2.85h2.85v2.85Zm5.5-19H15.95 32.1Z',
+            strokeOpacity: 1,
+            strokeWeight: 1,
+            fillOpacity: 1,
+            fillColor: '#FF5733',
+            strokeColor: '#FF5733',
+          },
+        });
 
-      let jumpPoints = 0;
-      let jump = Math.floor(Math.random() * (25 - 15 + 1) + 15);
-      const color = Math.floor(Math.random()*16777215).toString(16).padStart(6, '0').toUpperCase();
-      data.route.map((latLngRoute: any) => {
-        if (jumpPoints == 0) {
-          const latLng = new google.maps.LatLng(latLngRoute[0], latLngRoute[1]);
+        let jumpPoints = 0;
+        let jump = Math.floor(Math.random() * (25 - 15 + 1) + 15);
+        data.route.map((latLngRoute: any) => {
+          if (jumpPoints == 0) {
+            const latLng = new google.maps.LatLng(latLngRoute[0], latLngRoute[1]);
 
-          new google.maps.Marker({
+            new google.maps.Marker({
+              position: latLng,
+              map: this.map,
+              icon: {
+                path: 'M10.021 13.833q-1.604 0-2.729-1.104t-1.125-2.708q0-1.625 1.104-2.74 1.104-1.114 2.708-1.114 1.625 0 2.74 1.104 1.114 1.104 1.114 2.708t-1.104 2.729q-1.104 1.125-2.708 1.125Z',
+                strokeOpacity: 1,
+                strokeWeight: 1,
+                fillOpacity: 1,
+                fillColor: `#${color}`,
+              },
+            });
+          } if (jumpPoints == jump) {
+            jumpPoints = 0;
+          } else {
+            jumpPoints += 1;
+          }
+        });
+      } else if(data.message == true) {
+        alert('Order delivered successfully.')
+      } else {
+        const latLng = new google.maps.LatLng(data.message[0], data.message[1]);
+        drone = new google.maps.Marker({
             position: latLng,
             map: this.map,
             icon: {
-              path: 'M10.021 13.833q-1.604 0-2.729-1.104t-1.125-2.708q0-1.625 1.104-2.74 1.104-1.114 2.708-1.114 1.625 0 2.74 1.104 1.114 1.104 1.114 2.708t-1.104 2.729q-1.104 1.125-2.708 1.125Z',
+              url: '/assets/icons/drone_order.svg',
               strokeOpacity: 1,
               strokeWeight: 1,
               fillOpacity: 1,
               fillColor: `#${color}`,
-              // strokeColor: '#FF5733',
             },
           });
-        } if(jumpPoints == jump) {
-          jumpPoints = 0;
-        } else {
-          jumpPoints += 1;
-        }
-      });
+          setTimeout(() => {
+            drone.setMap(null);
+          }, 1000);
+      }
+    })
 
-      const latLng = new google.maps.LatLng(
-        data.warehouse.position.latitude,
-        data.warehouse.position.longitude
-      );
-
-      new google.maps.Marker({
-        position: latLng,
-        map: this.map,
-        icon: {
-          path: 'M24 9.1 6.95 15.95v23.1h6.15V25.8q0-1.2.825-2.05.825-.85 2.025-.85H32.1q1.15 0 2 .85.85.85.85 2.05v13.25h6.15v-23.1Zm-8.05 32.8h-9q-1.2 0-2.025-.825T4.1 39.05V16q0-.9.475-1.625T5.9 13.3l17.05-6.8q.55-.25 1.075-.25.525 0 1.025.25l17.1 6.8q.8.35 1.3 1.075t.5 1.625v23.05q0 1.2-.85 2.025t-2 .825h-9V25.8H15.95Zm2.65 0v-2.85h2.85v2.85Zm4-6v-2.85h2.85v2.85Zm4 6v-2.85h2.85v2.85Zm5.5-19H15.95 32.1Z',
-          strokeOpacity: 1,
-          strokeWeight: 1,
-          fillOpacity: 1,
-          fillColor: '#FF5733',
-          strokeColor: '#FF5733',
-        },
-      });
+    this.socket.emit('message', {
+      message: 'message',
+      userId: this.user.id,
+      sectionId: sectionId
     });
+
+
+
+    // return this.orderService.makeOrder(id!).subscribe((data) => {
+    //   console.log(
+    //     '🚀 ~ file: user-home.component.ts:75 ~ UserHomeComponent ~ returnthis.orderService.makeOrder ~ data',
+    //     data
+    //   );
+    //   // console.log(data.warehouse.position.latitude, data.warehouse.position.longitude);
+
+    //   let jumpPoints = 0;
+    //   let jump = Math.floor(Math.random() * (25 - 15 + 1) + 15);
+    //   const color = Math.floor(Math.random()*16777215).toString(16).padStart(6, '0').toUpperCase();
+    //   data.route.map((latLngRoute: any) => {
+    //     if (jumpPoints == 0) {
+    //       const latLng = new google.maps.LatLng(latLngRoute[0], latLngRoute[1]);
+
+    //       new google.maps.Marker({
+    //         position: latLng,
+    //         map: this.map,
+    //         icon: {
+    //           path: 'M10.021 13.833q-1.604 0-2.729-1.104t-1.125-2.708q0-1.625 1.104-2.74 1.104-1.114 2.708-1.114 1.625 0 2.74 1.104 1.114 1.104 1.114 2.708t-1.104 2.729q-1.104 1.125-2.708 1.125Z',
+    //           strokeOpacity: 1,
+    //           strokeWeight: 1,
+    //           fillOpacity: 1,
+    //           fillColor: `#${color}`,
+    //           // strokeColor: '#FF5733',
+    //         },
+    //       });
+    //     } if(jumpPoints == jump) {
+    //       jumpPoints = 0;
+    //     } else {
+    //       jumpPoints += 1;
+    //     }
+    //   });
+
+    //   const latLng = new google.maps.LatLng(
+    //     data.warehouse.position.latitude,
+    //     data.warehouse.position.longitude
+    //   );
+
+    //   new google.maps.Marker({
+    //     position: latLng,
+    //     map: this.map,
+    //     icon: {
+    //       path: 'M24 9.1 6.95 15.95v23.1h6.15V25.8q0-1.2.825-2.05.825-.85 2.025-.85H32.1q1.15 0 2 .85.85.85.85 2.05v13.25h6.15v-23.1Zm-8.05 32.8h-9q-1.2 0-2.025-.825T4.1 39.05V16q0-.9.475-1.625T5.9 13.3l17.05-6.8q.55-.25 1.075-.25.525 0 1.025.25l17.1 6.8q.8.35 1.3 1.075t.5 1.625v23.05q0 1.2-.85 2.025t-2 .825h-9V25.8H15.95Zm2.65 0v-2.85h2.85v2.85Zm4-6v-2.85h2.85v2.85Zm4 6v-2.85h2.85v2.85Zm5.5-19H15.95 32.1Z',
+    //       strokeOpacity: 1,
+    //       strokeWeight: 1,
+    //       fillOpacity: 1,
+    //       fillColor: '#FF5733',
+    //       strokeColor: '#FF5733',
+    //     },
+    //   });
+    // });
   }
 }

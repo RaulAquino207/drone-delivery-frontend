@@ -6,6 +6,11 @@ import { AdminLoginComponent } from './features/public/admin-login/admin-login.c
 import { UserLoginComponent } from './features/public/user-login/user-login.component';
 
 const routes: Routes = [
+  {
+    path: '',
+    redirectTo: 'login-user',
+    pathMatch: 'full',
+  },
   { path: 'login-admin', component: AdminLoginComponent },
   { path: 'login-user', component: UserLoginComponent },
   { path: 'home-admin', component: AdminHomeComponent },

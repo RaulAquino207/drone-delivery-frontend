@@ -8,7 +8,7 @@ import { environment } from '../../environments/environment';
 })
 export class AdminService {
 
-  private url = `${environment.apiUrl}/admin`;
+  private url = `${environment.apiUrl}/api/admin`;
 
   constructor(private http: HttpClient) { }
 

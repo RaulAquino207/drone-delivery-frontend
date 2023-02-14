@@ -17,6 +17,13 @@ import { UserHomeComponent } from './features/private/user-home/user-home.compon
 import { AdminHomeComponent } from './features/private/admin-home/admin-home.component';
 import { ToolbarComponent } from './features/public/toolbar/toolbar.component';
 import { GoogleMapsModule } from '@angular/google-maps';
+import { SocketIoConfig, SocketIoModule } from 'ngx-socket-io';
+import { environment } from '../environments/environment';
+
+const config: SocketIoConfig = { url: `${environment.socketUrl}`, options: {
+  autoConnect : false,
+  transports : ['websocket']
+} };
 
 @NgModule({
   declarations: [
@@ -37,7 +44,8 @@ import { GoogleMapsModule } from '@angular/google-maps';
     MatNativeDateModule,
     ReactiveFormsModule,
     MaterialExampleModule,
-    GoogleMapsModule
+    GoogleMapsModule,
+    SocketIoModule.forRoot(config)
   ],
   providers: [
     UserService,
